@@ -9,6 +9,7 @@ Use the Task tool with these specialized subagents for appropriate tasks:
 
 - **vue-expert**: Use for Vue 3 frontend features, UI components, styling, and client-side functionality
   - Examples: Creating components, fixing reactivity issues, performance optimization, complex state management
+  - 
   - **MANDATORY RULE: ANY time you need to create or significantly modify a .vue file, you MUST delegate to vue-expert**
 - **code-reviewer**: Use after writing significant code to review quality and best practices
 - **Explore**: Use for understanding codebase structure, searching for patterns, or answering questions about how components work
@@ -72,3 +73,6 @@ npm install && npm run dev
 - Status: green/blue/yellow/red
 - Charts: Custom SVG, CSS Grid for layouts
 - No emojis in UI
+
+## Code Style
+- Always document non-obvious logic changes with comments

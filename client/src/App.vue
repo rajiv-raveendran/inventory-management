@@ -1,48 +1,56 @@
 <template>
-  <div class="app">
-    <header class="top-nav">
-      <div class="nav-container">
-        <div class="logo">
-          <h1>{{ t('nav.companyName') }}</h1>
-          <span class="subtitle">{{ t('nav.subtitle') }}</span>
+  <div class="app-shell">
+    <!-- Fixed vertical sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1" y="1" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+            <rect x="11" y="1" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+            <rect x="1" y="11" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+            <rect x="11" y="11" width="6" height="6" rx="1.5" fill="white" opacity="0.9"/>
+          </svg>
         </div>
-        <nav class="nav-tabs">
-          <router-link to="/" :class="{ active: $route.path === '/' }">
-            {{ t('nav.overview') }}
-          </router-link>
-          <router-link to="/inventory" :class="{ active: $route.path === '/inventory' }">
-            {{ t('nav.inventory') }}
-          </router-link>
-          <router-link to="/orders" :class="{ active: $route.path === '/orders' }">
-            {{ t('nav.orders') }}
-          </router-link>
-          <router-link to="/spending" :class="{ active: $route.path === '/spending' }">
-            {{ t('nav.finance') }}
-          </router-link>
-          <router-link to="/demand" :class="{ active: $route.path === '/demand' }">
-            {{ t('nav.demandForecast') }}
-          </router-link>
-          <router-link to="/reports" :class="{ active: $route.path === '/reports' }">
-            Reports
-          </router-link>
-        </nav>
+        <div class="brand-text">
+          <span class="brand-name">{{ t('nav.companyName') }}</span>
+          <span class="brand-sub">{{ t('nav.subtitle') }}</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <router-link
+          v-for="item in navItems"
+          :key="item.path"
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: isActive(item) }"
+        >
+          <span class="nav-icon" v-html="item.icon"></span>
+          <span class="nav-label">{{ item.label }}</span>
+        </router-link>
+      </nav>
+
+      <div class="sidebar-footer">
         <LanguageSwitcher />
         <ProfileMenu
           @show-profile-details="showProfileDetails = true"
           @show-tasks="showTasks = true"
         />
       </div>
-    </header>
-    <FilterBar />
-    <main class="main-content">
-      <router-view />
-    </main>
+    </aside>
 
-    <ProfileDetailsModal
-      :is-open="showProfileDetails"
-      @close="showProfileDetails = false"
-    />
+    <!-- Content area -->
+    <div class="main-area">
+      <div class="topbar">
+        <FilterBar />
+      </div>
+      <main class="content">
+        <router-view />
+      </main>
+    </div>
 
+    <!-- Modals (unchanged) -->
+    <ProfileDetailsModal :is-open="showProfileDetails" @close="showProfileDetails = false" />
     <TasksModal
       :is-open="showTasks"
       :tasks="tasks"
@@ -56,6 +64,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { api } from './api'
 import { useAuth } from './composables/useAuth'
 import { useI18n } from './composables/useI18n'
@@ -77,6 +86,7 @@ export default {
   setup() {
     const { currentUser } = useAuth()
     const { t } = useI18n()
+    const route = useRoute()
     const showProfileDetails = ref(false)
     const showTasks = ref(false)
     const apiTasks = ref([])
@@ -85,6 +95,49 @@ export default {
     const tasks = computed(() => {
       return [...currentUser.value.tasks, ...apiTasks.value]
     })
+
+    const navItems = [
+      {
+        path: '/',
+        label: t('nav.overview'),
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9.5" y="1" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="9.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9.5" y="9.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>`
+      },
+      {
+        path: '/inventory',
+        label: t('nav.inventory'),
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5L14 4.5V11.5L8 14.5L2 11.5V4.5L8 1.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 1.5V14.5M2 4.5L8 7.5L14 4.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`
+      },
+      {
+        path: '/orders',
+        label: t('nav.orders'),
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4H14M2 8H10M2 12H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+      },
+      {
+        path: '/spending',
+        label: t('nav.finance'),
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="9" width="3" height="5" rx="0.5" stroke="currentColor" stroke-width="1.5"/><rect x="6.5" y="6" width="3" height="8" rx="0.5" stroke="currentColor" stroke-width="1.5"/><rect x="11" y="3" width="3" height="11" rx="0.5" stroke="currentColor" stroke-width="1.5"/></svg>`
+      },
+      {
+        path: '/demand',
+        label: t('nav.demandForecast'),
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="1,11 5,7 9,9 15,3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="11,3 15,3 15,7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      },
+      {
+        path: '/reports',
+        label: 'Reports',
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="1.5" width="12" height="13" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5.5H11M5 8H11M5 10.5H8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+      },
+      {
+        path: '/restocking',
+        label: 'Restocking',
+        icon: `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.5 2.5A6.5 6.5 0 1 1 7 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="13.5,2.5 13.5,6 10,6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+      }
+    ]
+
+    const isActive = (item) => {
+      if (item.path === '/') return route.path === '/'
+      return route.path.startsWith(item.path)
+    }
 
     const loadTasks = async () => {
       try {
@@ -150,6 +203,9 @@ export default {
 
     return {
       t,
+      route,
+      navItems,
+      isActive,
       showProfileDetails,
       showTasks,
       tasks,
@@ -176,102 +232,155 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.app {
+/* ── Shell layout ── */
+.app-shell {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
 
-.top-nav {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  position: sticky;
+/* ── Sidebar ── */
+.sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background: #0f172a;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
   top: 0;
+  bottom: 0;
   z-index: 100;
+  overflow-y: auto;
 }
 
-.nav-container {
-  max-width: 1600px;
-  margin: 0 auto;
+.sidebar-brand {
   display: flex;
   align-items: center;
-  padding: 0 2rem;
-  height: 70px;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
 }
 
-.nav-container > .nav-tabs {
-  margin-left: auto;
-  margin-right: 1rem;
-}
-
-.nav-container > .language-switcher {
-  margin-right: 1rem;
-}
-
-.logo {
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  background: #3b82f6;
+  border-radius: 8px;
   display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.logo h1 {
-  font-size: 1.375rem;
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.brand-name {
+  font-size: 13px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.subtitle {
-  font-size: 0.813rem;
-  color: #64748b;
-  font-weight: 400;
-  padding-left: 0.75rem;
-  border-left: 1px solid #e2e8f0;
+.brand-sub {
+  font-size: 11px;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.nav-tabs {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.nav-tabs a {
-  padding: 0.625rem 1.25rem;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.938rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.nav-tabs a:hover {
-  color: #0f172a;
-  background: #f1f5f9;
-}
-
-.nav-tabs a.active {
-  color: #2563eb;
-  background: #eff6ff;
-}
-
-.nav-tabs a.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #2563eb;
-}
-
-.main-content {
+.sidebar-nav {
   flex: 1;
-  max-width: 1600px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 1.5rem 2rem;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  margin: 1px 8px;
+  border-radius: 6px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+}
+
+.nav-item.active {
+  background: rgba(59,130,246,0.15);
+  color: #f8fafc;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.nav-item.active .nav-icon {
+  opacity: 1;
+}
+
+.nav-item:hover .nav-icon {
+  opacity: 0.9;
+}
+
+.nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-footer {
+  padding: 12px 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Main area ── */
+.main-area {
+  margin-left: 240px;
+  flex: 1;
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+
+.content {
+  padding: 32px;
+  flex: 1;
 }
 
 .page-header {
